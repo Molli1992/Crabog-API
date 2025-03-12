@@ -1,5 +1,6 @@
 import { pool } from "../db.js";
 import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
 
 // ---------------------------------------- get All Users ------------------------------------------
 
@@ -8,6 +9,34 @@ export const getAllUser = async (req, res) => {
     const [rows] = await pool.query("SELECT * FROM users");
 
     res.status(202).json({ message: "Exito trayendo usuarios", news: rows });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Error interno del servidor", error: error });
+  }
+};
+
+// ---------------------------------------- get User ------------------------------------------
+
+export const getUser = async (req, res) => {
+  try {
+    const id = decodeURIComponent(req.params.id);
+    const email = decodeURIComponent(req.params.email);
+
+    if (!id || !email) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
+
+    const [user] = await pool.query(
+      "SELECT * FROM users WHERE email = ? OR id = ?",
+      [email, id]
+    );
+
+    if (user.length === 0) {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+
+    res.status(202).json({ message: "Exito trayendo usuario" });
   } catch (error) {
     res
       .status(500)
@@ -99,9 +128,11 @@ export const postUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const id = uuidv4();
+
     const [result] = await pool.query(
-      "INSERT INTO users (name, email, password, isActive) VALUES (?, ?, ?, ?)",
-      [name, email, hashedPassword, false]
+      "INSERT INTO users (id, name, email, password, isActive) VALUES (?, ?, ?, ?, ?)",
+      [id, name, email, hashedPassword, false]
     );
 
     if (result.affectedRows === 0) {
@@ -110,6 +141,7 @@ export const postUser = async (req, res) => {
 
     res.status(201).json({ message: "Usuario creado correctamente" });
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .send({ message: "Error interno del servidor", error: error });
