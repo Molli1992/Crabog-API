@@ -42,6 +42,10 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
+    if (user.isActive === 0) {
+      return res.status(401).json({ message: "Usuario inactivo" });
+    }
+
     res.json({
       message: "Login exitoso",
       user: {
