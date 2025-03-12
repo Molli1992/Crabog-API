@@ -9,7 +9,7 @@ export const getNews = async (req, res) => {
     res.status(202).json({ message: "Exito trayendo noticias", news: rows });
   } catch (error) {
     res
-      .status(404)
+      .status(500)
       .send({ message: "Error interno del servidor", error: error });
   }
 };
