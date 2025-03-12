@@ -223,7 +223,8 @@ export const deleteUser = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = decodeURIComponent(req.body.email);
+    const password = decodeURIComponent(req.body.password);
 
     if (!email || !password) {
       return res.status(400).json({ message: "Faltan datos obligatorios" });
@@ -238,9 +239,11 @@ export const resetPassword = async (req, res) => {
       return res.status(404).send({ message: "Usuario inexistente" });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const [updateResult] = await pool.query(
       "UPDATE users SET password = ? WHERE email = ?",
-      [password, email]
+      [hashedPassword, email]
     );
 
     if (updateResult.affectedRows === 0) {

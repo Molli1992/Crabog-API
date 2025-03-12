@@ -9,3 +9,7 @@ export const DB_PORT = process.env.DB_PORT;
 export const DB_DATABASE = process.env.DB_DATABASE;
 
 export const PORT = process.env.PORT;
+
+export const UserNODEMAILER = process.env.USER_NODEMAILER;
+export const PassNODEMAILER = process.env.PASS_NODEMAILER;
+export const companyEMAIL = process.env.COMPANY_EMAIL;
