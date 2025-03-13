@@ -8,7 +8,7 @@ export const getAllUser = async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM users");
 
-    res.status(202).json({ message: "Exito trayendo usuarios", news: rows });
+    res.status(202).json({ message: "Exito trayendo usuarios", users: rows });
   } catch (error) {
     res
       .status(500)
@@ -71,11 +71,9 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
-    /*
     if (user.isActive === 0) {
       return res.status(401).json({ message: "Usuario inactivo" });
     }
-    */
 
     res.json({
       message: "Login exitoso",
@@ -83,7 +81,7 @@ export const loginUser = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        isActive: user.isActive === 0 ? false : true,
+        isActive: user.isActive,
       },
     });
   } catch (error) {
@@ -155,8 +153,10 @@ export const postUser = async (req, res) => {
 export const putUser = async (req, res) => {
   try {
     const id = decodeURIComponent(req.body.id);
-    const email = decodeURIComponent(req.body.email);
-    const name = decodeURIComponent(req.body.name);
+    const email = req.body.email
+      ? decodeURIComponent(req.body.email)
+      : undefined;
+    const name = req.body.name ? decodeURIComponent(req.body.name) : undefined;
     const isActive = req.body.isActive;
 
     const [existingUser] = await pool.query(
@@ -166,6 +166,20 @@ export const putUser = async (req, res) => {
 
     if (existingUser.length === 0) {
       return res.status(404).send({ message: "Usuario inexistente" });
+    }
+
+    const [existingUserEmail] = await pool.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (
+      existingUserEmail.length !== 0 &&
+      existingUser[0].id !== existingUserEmail[0].id
+    ) {
+      return res
+        .status(404)
+        .send({ message: `Ya existe un usuario con el email: ${email}` });
     }
 
     let updateQuery = "UPDATE users SET";
@@ -213,7 +227,7 @@ export const putUser = async (req, res) => {
         id: updatedUser[0].id,
         name: updatedUser[0].name,
         email: updatedUser[0].email,
-        isActive: updatedUser[0].isActive === 0 ? false : true,
+        isActive: updatedUser[0].isActive,
       },
     });
   } catch (error) {
