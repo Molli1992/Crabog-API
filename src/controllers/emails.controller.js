@@ -193,7 +193,6 @@ export const lawyerEmail = async (req, res) => {
       message: `Email enviado correctamente`,
     });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .send({ message: "Error interno del servidor", error: error });

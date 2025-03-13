@@ -71,9 +71,11 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
+    /*
     if (user.isActive === 0) {
       return res.status(401).json({ message: "Usuario inactivo" });
     }
+    */
 
     res.json({
       message: "Login exitoso",
@@ -152,7 +154,10 @@ export const postUser = async (req, res) => {
 
 export const putUser = async (req, res) => {
   try {
-    const { id, email, name, isActive } = req.body;
+    const id = decodeURIComponent(req.body.id);
+    const email = decodeURIComponent(req.body.email);
+    const name = decodeURIComponent(req.body.name);
+    const isActive = req.body.isActive;
 
     const [existingUser] = await pool.query(
       "SELECT * FROM users WHERE id = ?",
