@@ -81,6 +81,20 @@ export const putTypes = async (req, res) => {
       return res.status(404).send({ message: "Genero no encontrado" });
     }
 
+    const [existingTypeName] = await pool.query(
+      "SELECT * FROM types WHERE name = ?",
+      [name]
+    );
+
+    if (
+      existingTypeName.length !== 0 &&
+      existingType[0].id !== existingTypeName[0].id
+    ) {
+      return res
+        .status(404)
+        .send({ message: `Ya existe un genero con el nombre: ${name}` });
+    }
+
     const [updateResult] = await pool.query(
       "UPDATE types SET name = ? WHERE id = ?",
       [name, id]

@@ -73,25 +73,42 @@ export const postNews = async (req, res) => {
 
 export const putNews = async (req, res) => {
   try {
-    const { id, name } = req.body;
+    const { id, type } = req.body;
+    const title = decodeURIComponent(req.body.title);
+    const description = decodeURIComponent(req.body.description);
+    const link = decodeURIComponent(req.body.link);
 
-    if (!id || !name) {
+    if (!id || !title || !description || !link || !type) {
       return res
         .status(404)
         .send({ message: "Falta enviar datos obligatorios" });
     }
 
-    const [existingType] = await pool.query("SELECT * FROM news WHERE id = ?", [
+    const [existingNews] = await pool.query("SELECT * FROM news WHERE id = ?", [
       id,
     ]);
 
-    if (existingType.length === 0) {
+    if (existingNews.length === 0) {
       return res.status(404).send({ message: "Noticia no encontrada" });
     }
 
+    const [existingNewsTitle] = await pool.query(
+      "SELECT * FROM news WHERE title = ?",
+      [title]
+    );
+
+    if (
+      existingNewsTitle.length !== 0 &&
+      existingNews[0].id !== existingNewsTitle[0].id
+    ) {
+      return res
+        .status(404)
+        .send({ message: `Ya existe una noticia con el titulo: ${title}` });
+    }
+
     const [updateResult] = await pool.query(
-      "UPDATE news SET name = ? WHERE id = ?",
-      [name, id]
+      "UPDATE news SET title = ?, description = ?, type = ?, link = ? WHERE id = ?",
+      [title, description, type, link, id]
     );
 
     if (updateResult.affectedRows === 0) {
@@ -107,6 +124,7 @@ export const putNews = async (req, res) => {
       type: updatedType[0],
     });
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .send({ message: "Error interno del servidor", error: error });
