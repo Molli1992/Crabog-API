@@ -100,6 +100,11 @@ export const putTypes = async (req, res) => {
       [name, id]
     );
 
+    await pool.query("UPDATE news SET type = ? WHERE type = ?", [
+      name,
+      existingType[0].name,
+    ]);
+
     if (updateResult.affectedRows === 0) {
       return res.status(400).send({ message: "Error modificando genero" });
     }
