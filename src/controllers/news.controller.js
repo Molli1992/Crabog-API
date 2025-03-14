@@ -21,8 +21,16 @@ export const postNews = async (req, res) => {
     const { date, type, seen } = req.body;
     const title = decodeURIComponent(req.body.title);
     const description = decodeURIComponent(req.body.description);
+    const link = decodeURIComponent(req.body.link);
 
-    if (!title || !description || !date || !type || seen === undefined) {
+    if (
+      !title ||
+      !description ||
+      !link ||
+      !date ||
+      !type ||
+      seen === undefined
+    ) {
       return res.status(400).json({ message: "Faltan datos obligatorios" });
     }
 
@@ -38,8 +46,8 @@ export const postNews = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      "INSERT INTO news (title, description, date, type, seen) VALUES (?, ?, ?, ?, ?)",
-      [title, description, date, type, seen]
+      "INSERT INTO news (title, description, date, type, seen, link) VALUES (?, ?, ?, ?, ?, ?)",
+      [title, description, date, type, seen, link]
     );
 
     if (result.affectedRows === 0) {
