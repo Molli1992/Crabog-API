@@ -18,7 +18,7 @@ export const getTypes = async (req, res) => {
 
 export const postTypes = async (req, res) => {
   try {
-    const { name } = req.body;
+    const name = decodeURIComponent(req.body.name);
 
     if (!name) {
       return res
@@ -63,7 +63,8 @@ export const postTypes = async (req, res) => {
 
 export const putTypes = async (req, res) => {
   try {
-    const { id, name } = req.body;
+    const id = decodeURIComponent(req.body.id);
+    const name = decodeURIComponent(req.body.name);
 
     if (!id || !name) {
       return res
