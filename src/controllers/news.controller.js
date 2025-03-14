@@ -18,7 +18,9 @@ export const getNews = async (req, res) => {
 
 export const postNews = async (req, res) => {
   try {
-    const { title, description, date, type, seen } = req.body;
+    const { date, type, seen } = req.body;
+    const title = decodeURIComponent(req.body.title);
+    const description = decodeURIComponent(req.body.description);
 
     if (!title || !description || !date || !type || seen === undefined) {
       return res.status(400).json({ message: "Faltan datos obligatorios" });
@@ -52,6 +54,7 @@ export const postNews = async (req, res) => {
       .status(201)
       .json({ message: "Noticia agregada exitosamente", news: newNews[0] });
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .send({ message: "Error interno del servidor", error: error });

@@ -20,16 +20,16 @@ export const getAllUser = async (req, res) => {
 
 export const getUser = async (req, res) => {
   try {
-    const id = decodeURIComponent(req.params.id);
+    const code = decodeURIComponent(req.params.code);
     const email = decodeURIComponent(req.params.email);
 
-    if (!id || !email) {
+    if (!code || !email) {
       return res.status(400).json({ message: "Faltan datos obligatorios" });
     }
 
     const [user] = await pool.query(
-      "SELECT * FROM users WHERE email = ? OR id = ?",
-      [email, id]
+      "SELECT * FROM users WHERE email = ? OR code = ?",
+      [email, code]
     );
 
     if (user.length === 0) {
@@ -78,7 +78,7 @@ export const loginUser = async (req, res) => {
     res.json({
       message: "Login exitoso",
       user: {
-        id: user.id,
+        code: user.code,
         name: user.name,
         email: user.email,
         isActive: user.isActive,
@@ -128,11 +128,11 @@ export const postUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const id = uuidv4();
+    const code = uuidv4();
 
     const [result] = await pool.query(
-      "INSERT INTO users (id, name, email, password, isActive) VALUES (?, ?, ?, ?, ?)",
-      [id, name, email, hashedPassword, false]
+      "INSERT INTO users (code, name, email, password, isActive) VALUES (?, ?, ?, ?, ?)",
+      [code, name, email, hashedPassword, false]
     );
 
     if (result.affectedRows === 0) {
@@ -152,7 +152,7 @@ export const postUser = async (req, res) => {
 
 export const putUser = async (req, res) => {
   try {
-    const id = decodeURIComponent(req.body.id);
+    const code = decodeURIComponent(req.body.code);
     const email = req.body.email
       ? decodeURIComponent(req.body.email)
       : undefined;
@@ -160,8 +160,8 @@ export const putUser = async (req, res) => {
     const isActive = req.body.isActive;
 
     const [existingUser] = await pool.query(
-      "SELECT * FROM users WHERE id = ?",
-      [id]
+      "SELECT * FROM users WHERE code = ?",
+      [code]
     );
 
     if (existingUser.length === 0) {
@@ -175,7 +175,7 @@ export const putUser = async (req, res) => {
 
     if (
       existingUserEmail.length !== 0 &&
-      existingUser[0].id !== existingUserEmail[0].id
+      existingUser[0].code !== existingUserEmail[0].code
     ) {
       return res
         .status(404)
@@ -208,8 +208,8 @@ export const putUser = async (req, res) => {
         .send({ message: "No se han proporcionado datos para actualizar" });
     }
 
-    updateQuery += " WHERE id = ?";
-    updateValues.push(id);
+    updateQuery += " WHERE code = ?";
+    updateValues.push(code);
 
     const [updateResult] = await pool.query(updateQuery, updateValues);
 
@@ -217,14 +217,14 @@ export const putUser = async (req, res) => {
       return res.status(400).send({ message: "Error modificando usuario" });
     }
 
-    const [updatedUser] = await pool.query("SELECT * FROM users WHERE id = ?", [
-      id,
+    const [updatedUser] = await pool.query("SELECT * FROM users WHERE code = ?", [
+      code,
     ]);
 
     res.status(200).send({
       message: "Usuario actualizado exitosamente",
       user: {
-        id: updatedUser[0].id,
+        code: updatedUser[0].code,
         name: updatedUser[0].name,
         email: updatedUser[0].email,
         isActive: updatedUser[0].isActive,
@@ -241,25 +241,25 @@ export const putUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { code } = req.body;
 
-    if (!id) {
+    if (!code) {
       return res
         .status(404)
         .send({ message: "Falta enviar datos obligatorios" });
     }
 
     const [existingUser] = await pool.query(
-      "SELECT * FROM users WHERE id = ?",
-      [id]
+      "SELECT * FROM users WHERE code = ?",
+      [code]
     );
 
     if (existingUser.length === 0) {
       return res.status(404).send({ message: "Usuario no encontrado" });
     }
 
-    const [deleteResult] = await pool.query("DELETE FROM users WHERE id = ?", [
-      id,
+    const [deleteResult] = await pool.query("DELETE FROM users WHERE code = ?", [
+      code,
     ]);
 
     if (deleteResult.affectedRows === 0) {
